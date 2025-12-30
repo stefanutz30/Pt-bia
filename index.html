@@ -123,9 +123,33 @@
             font-size: 0.8rem;
             color: #ccc;
         }
+
+        #musicToggle {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 2000;
+            background: white;
+            padding: 10px;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            display: none;
+        }
+    </div>
     </style>
 </head>
 <body>
+
+    <div id="musicToggle" onclick="toggleMusic()">
+        <svg id="musicOn" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+        </svg>
+        <svg id="musicOff" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+        </svg>
+    </div>
 
     <div class="book" id="birthdayBook">
         
@@ -137,7 +161,7 @@
                     <p>La mulți ani, Bia! Sper ca acest an să fie plin de aventuri noi, zâmbete sincere și reușite pe toate planurile.</p>
                     <p>Ești o persoană rară și meriți să fii înconjurată doar de oameni care te prețuiesc la adevărata ta valoare.</p>
                 </div>
-                <div class="mt-8 text-2xl cursive">Cu mult drag, Ștefanuț ❤️</div>
+                <div class="mt-8 text-2xl cursive">Cu mult drag, [Numele Tău] ❤️</div>
                 <button onclick="resetBook()" class="mt-8 text-xs opacity-50 hover:opacity-100 underline">Înapoi la început</button>
             </div>
             <span class="page-number">3</span>
@@ -196,14 +220,20 @@
         let audioContext;
         let analyser;
         let isBlown = false;
+        
+        // Happy Birthday Audio Source
+        const birthdaySong = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'); // You can replace this URL with a specific Happy Birthday instrumental link
+        birthdaySong.loop = true;
 
         const startBtn = document.getElementById('startMic');
         const cakeContainer = document.getElementById('cakeContainer');
         const blowStatus = document.getElementById('blowStatus');
         const micPrompt = document.getElementById('micPrompt');
+        const musicToggle = document.getElementById('musicToggle');
 
         startBtn.addEventListener('click', async () => {
             try {
+                // Initialize audio on button click (browser requirement for autoplay)
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 setupAudio(stream);
                 micPrompt.classList.add('hidden');
@@ -240,7 +270,13 @@
         }
 
         function triggerBlowOut() {
+            if (isBlown) return;
             isBlown = true;
+            
+            // Play music
+            birthdaySong.play().catch(e => console.log("Audio play blocked", e));
+            musicToggle.style.display = 'block';
+
             document.querySelectorAll('.flame').forEach(f => f.classList.add('extinguished'));
             if (audioContext) audioContext.close();
             
@@ -248,6 +284,21 @@
                 createConfetti();
                 flipPage('page1');
             }, 1000);
+        }
+
+        function toggleMusic() {
+            const onIcon = document.getElementById('musicOn');
+            const offIcon = document.getElementById('musicOff');
+            
+            if (birthdaySong.paused) {
+                birthdaySong.play();
+                onIcon.classList.remove('hidden');
+                offIcon.classList.add('hidden');
+            } else {
+                birthdaySong.pause();
+                onIcon.classList.add('hidden');
+                offIcon.classList.remove('hidden');
+            }
         }
 
         function flipPage(pageId) {
