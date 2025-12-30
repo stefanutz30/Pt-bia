@@ -10,14 +10,70 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: #fff5f7;
-            overflow: hidden;
+            background: #fdf2f8;
             margin: 0;
             height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            perspective: 2000px; /* Essential for 3D book effect */
         }
 
         .cursive {
             font-family: 'Dancing Script', cursive;
+        }
+
+        /* Book Container */
+        .book {
+            position: relative;
+            width: 90vw;
+            max-width: 450px;
+            height: 80vh;
+            max-height: 650px;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+
+        /* Page Styling */
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: white;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: inset 3px 0 10px rgba(0,0,0,0.1), 5px 5px 15px rgba(0,0,0,0.1);
+            border-radius: 4px 15px 15px 4px;
+            transform-origin: left;
+            transform-style: preserve-3d;
+            transition: transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+            backface-visibility: hidden;
+            z-index: 1;
+        }
+
+        /* Flip Logic */
+        .page.flipped {
+            transform: rotateY(-180deg);
+            z-index: 0;
+        }
+
+        /* Decoration for page edge */
+        .page::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 10px;
+            height: 100%;
+            background: linear-gradient(to right, rgba(0,0,0,0.05), transparent);
+            border-radius: 4px 0 0 4px;
         }
 
         /* Candle Flame Animation */
@@ -43,51 +99,14 @@
             display: none;
         }
 
-        /* Slide Transitions */
-        .page {
-            transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .hidden-page {
-            transform: translateY(100%);
-        }
-
-        .active-page {
-            transform: translateY(0);
-        }
-
-        .exit-page {
-            transform: translateY(-100%);
-        }
-
         .confetti {
             position: fixed;
             width: 10px;
             height: 10px;
-            background-color: #f00;
             z-index: 1000;
             pointer-events: none;
         }
 
-        /* Mic Permission Pulse */
-        .pulse {
-            animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-        }
-
-        @keyframes pulse-ring {
-            0% { transform: scale(.33); }
-            80%, 100% { opacity: 0; }
-        }
-        
         .floating {
             animation: float 3s ease-in-out infinite;
         }
@@ -96,82 +115,86 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-20px); }
         }
+
+        .page-number {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: #ccc;
+        }
     </style>
 </head>
-<body class="flex items-center justify-center">
+<body>
 
-    <!-- Screen 1: The Cake & Candle Blowing -->
-    <div id="screen1" class="page active-page bg-pink-50">
-        <div id="micPrompt" class="mb-8 text-center">
-            <h1 class="text-3xl font-bold text-pink-600 mb-4">E ziua ta, Bia! 🎂</h1>
-            <p class="text-gray-600 mb-6">Apasă pe buton și suflă în lumânări ca să-ți pui o dorință!</p>
-            <button id="startMic" class="bg-pink-500 hover:bg-pink-600 text-white px-8 py-4 rounded-full font-bold shadow-lg transition transform hover:scale-105 active:scale-95 flex items-center gap-2 mx-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
-                Activează microfonul
-            </button>
-        </div>
-
-        <div id="cakeContainer" class="relative mt-10 opacity-50 transition-opacity duration-500">
-            <!-- Simple SVG Cake -->
-            <svg width="200" height="200" viewBox="0 0 200 200" class="drop-shadow-xl">
-                <!-- Base Layer -->
-                <rect x="40" y="120" width="120" height="60" rx="10" fill="#fbcfe8" />
-                <!-- Middle Layer -->
-                <rect x="55" y="80" width="90" height="40" rx="8" fill="#f9a8d4" />
-                <!-- Top Layer -->
-                <rect x="70" y="55" width="60" height="25" rx="5" fill="#f472b6" />
-                <!-- Candles -->
-                <rect x="80" y="35" width="6" height="20" fill="#ffffff" />
-                <rect x="97" y="35" width="6" height="20" fill="#ffffff" />
-                <rect x="114" y="35" width="6" height="20" fill="#ffffff" />
-            </svg>
-            
-            <!-- Flames -->
-            <div id="f1" class="flame" style="left: 83px; top: 12px;"></div>
-            <div id="f2" class="flame" style="left: 100px; top: 12px;"></div>
-            <div id="f3" class="flame" style="left: 117px; top: 12px;"></div>
-        </div>
+    <div class="book" id="birthdayBook">
         
-        <div id="blowStatus" class="hidden mt-8 text-pink-400 font-medium animate-pulse">
-            Suflă cu putere! 💨
-        </div>
-    </div>
-
-    <!-- Screen 2: First Wish (La multi ani) -->
-    <div id="screen2" class="page hidden-page bg-white">
-        <div class="max-w-md">
-            <div class="text-6xl mb-6 floating">🎈</div>
-            <h2 class="cursive text-6xl text-pink-500 mb-4">La Mulți Ani, Bia!</h2>
-            <p class="text-2xl text-gray-700 font-light italic mb-8">6 Ianuarie — O zi specială pentru o persoană specială.</p>
-            <button onclick="nextPage()" class="bg-pink-100 text-pink-600 px-6 py-3 rounded-xl font-bold hover:bg-pink-200 transition">
-                Continuă →
-            </button>
-        </div>
-    </div>
-
-    <!-- Screen 3: The Message -->
-    <div id="screen3" class="page hidden-page bg-pink-600 text-white">
-        <div class="max-w-lg">
-            <h3 class="text-4xl font-bold mb-6">Dorințele mele pentru tine... ✨</h3>
-            <div class="space-y-6 text-xl leading-relaxed opacity-90">
-                <p>La mulți ani de ziua ta, Bia! Sper ca anul acesta să fie exact așa cum l-ai visat, plin de bucurii și momente memorabile.</p>
-                <p>Ești o persoană minunată și meriți tot ce e mai bun pe lume. Fie ca 6 Ianuarie să fie doar începutul celui mai frumos capitol din viața ta!</p>
+        <!-- Page 3: The Deep Wish (Bottom Layer) -->
+        <div id="page3" class="page bg-pink-600 text-white" style="z-index: 1;">
+            <div class="max-w-xs">
+                <h3 class="text-3xl font-bold mb-6">Dorințele mele... ✨</h3>
+                <div class="space-y-4 text-lg leading-relaxed opacity-90 text-left">
+                    <p>La mulți ani, Bia! Sper ca acest an să fie plin de aventuri noi, zâmbete sincere și reușite pe toate planurile.</p>
+                    <p>Ești o persoană rară și meriți să fii înconjurată doar de oameni care te prețuiesc la adevărata ta valoare.</p>
+                </div>
+                <div class="mt-8 text-2xl cursive">Cu mult drag, [Numele Tău] ❤️</div>
+                <button onclick="resetBook()" class="mt-8 text-xs opacity-50 hover:opacity-100 underline">Înapoi la început</button>
             </div>
-            <div class="mt-12 text-3xl cursive">Cu mult drag, [Numele Tău] ❤️</div>
-            
-            <button onclick="reset()" class="mt-12 text-sm opacity-60 hover:opacity-100 underline decoration-dotted">
-                Începe din nou
-            </button>
+            <span class="page-number">3</span>
         </div>
+
+        <!-- Page 2: La Multi Ani -->
+        <div id="page2" class="page bg-white" style="z-index: 2;">
+            <div class="max-w-xs">
+                <div class="text-6xl mb-4 floating">🎈</div>
+                <h2 class="cursive text-5xl text-pink-500 mb-2">La Mulți Ani, Bia!</h2>
+                <p class="text-xl text-gray-500 font-light italic mb-8">6 Ianuarie</p>
+                <div class="w-full h-px bg-pink-100 mb-8"></div>
+                <p class="text-gray-600 mb-8">O zi specială pentru o persoană cu adevărat specială.</p>
+                <button onclick="flipPage('page2')" class="bg-pink-500 text-white px-8 py-3 rounded-full font-bold shadow-md hover:bg-pink-600 transition">
+                    Citește mesajul →
+                </button>
+            </div>
+            <span class="page-number">2</span>
+        </div>
+
+        <!-- Page 1: Cover / Cake -->
+        <div id="page1" class="page bg-pink-50" style="z-index: 3;">
+            <div id="micPrompt" class="mb-6 text-center">
+                <h1 class="text-3xl font-bold text-pink-600 mb-4">E ziua ta! 🎂</h1>
+                <p class="text-sm text-gray-500 mb-6">Apasă butonul, pune-ți o dorință și suflă!</p>
+                <button id="startMic" class="bg-pink-500 hover:bg-pink-600 text-white p-4 rounded-full shadow-lg transition transform hover:scale-105 active:scale-95 flex items-center justify-center mx-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                </button>
+            </div>
+
+            <div id="cakeContainer" class="relative opacity-40 transition-opacity duration-700">
+                <svg width="180" height="180" viewBox="0 0 200 200" class="drop-shadow-xl">
+                    <rect x="40" y="120" width="120" height="60" rx="10" fill="#fbcfe8" />
+                    <rect x="55" y="80" width="90" height="40" rx="8" fill="#f9a8d4" />
+                    <rect x="70" y="55" width="60" height="25" rx="5" fill="#f472b6" />
+                    <rect x="80" y="35" width="6" height="20" fill="#ffffff" />
+                    <rect x="97" y="35" width="6" height="20" fill="#ffffff" />
+                    <rect x="114" y="35" width="6" height="20" fill="#ffffff" />
+                </svg>
+                <div id="f1" class="flame" style="left: 83px; top: 12px;"></div>
+                <div id="f2" class="flame" style="left: 100px; top: 12px;"></div>
+                <div id="f3" class="flame" style="left: 117px; top: 12px;"></div>
+            </div>
+            
+            <div id="blowStatus" class="hidden mt-6 text-pink-400 font-medium animate-pulse text-sm">
+                Suflă acum! 💨
+            </div>
+            <span class="page-number">1</span>
+        </div>
+
     </div>
 
     <script>
         let audioContext;
         let analyser;
-        let microphone;
-        let javascriptNode;
         let isBlown = false;
 
         const startBtn = document.getElementById('startMic');
@@ -184,109 +207,78 @@
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 setupAudio(stream);
                 micPrompt.classList.add('hidden');
-                cakeContainer.classList.remove('opacity-50');
+                cakeContainer.classList.remove('opacity-40');
                 cakeContainer.classList.add('opacity-100');
                 blowStatus.classList.remove('hidden');
             } catch (err) {
-                console.error('Microphone access denied:', err);
-                // Fallback for no mic: allow click on cake to blow
+                console.error('Mic error:', err);
                 cakeContainer.onclick = triggerBlowOut;
-                alert("Nu am putut accesa microfonul, dar poți atinge tortul pentru a sufla!");
+                alert("N-am putut accesa mic-ul, dar poți atinge tortul!");
             }
         });
 
         function setupAudio(stream) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
             analyser = audioContext.createAnalyser();
-            microphone = audioContext.createMediaStreamSource(stream);
-            javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
+            const source = audioContext.createMediaStreamSource(stream);
+            const processor = audioContext.createScriptProcessor(2048, 1, 1);
 
-            analyser.smoothingTimeConstant = 0.8;
-            analyser.fftSize = 1024;
+            analyser.fftSize = 512;
+            source.connect(analyser);
+            analyser.connect(processor);
+            processor.connect(audioContext.destination);
 
-            microphone.connect(analyser);
-            analyser.connect(javascriptNode);
-            javascriptNode.connect(audioContext.destination);
-
-            javascriptNode.onaudioprocess = () => {
+            processor.onaudioprocess = () => {
                 const array = new Uint8Array(analyser.frequencyBinCount);
                 analyser.getByteFrequencyData(array);
-                let values = 0;
-
-                for (let i = 0; i < array.length; i++) {
-                    values += array[i];
-                }
-
-                const average = values / array.length;
+                let sum = 0;
+                for (let i = 0; i < array.length; i++) sum += array[i];
+                const average = sum / array.length;
                 
-                // If the volume is high enough (blowing sound)
-                if (average > 45 && !isBlown) {
-                    triggerBlowOut();
-                }
+                if (average > 40 && !isBlown) triggerBlowOut();
             };
         }
 
         function triggerBlowOut() {
             isBlown = true;
             document.querySelectorAll('.flame').forEach(f => f.classList.add('extinguished'));
+            if (audioContext) audioContext.close();
             
-            if (audioContext) {
-                audioContext.close();
-            }
-
             setTimeout(() => {
                 createConfetti();
-                const s1 = document.getElementById('screen1');
-                const s2 = document.getElementById('screen2');
-                
-                s1.classList.add('exit-page');
-                s1.classList.remove('active-page');
-                
-                s2.classList.remove('hidden-page');
-                s2.classList.add('active-page');
-            }, 800);
+                flipPage('page1');
+            }, 1000);
         }
 
-        function nextPage() {
-            const s2 = document.getElementById('screen2');
-            const s3 = document.getElementById('screen3');
-            
-            s2.classList.add('exit-page');
-            s2.classList.remove('active-page');
-            
-            s3.classList.remove('hidden-page');
-            s3.classList.add('active-page');
+        function flipPage(pageId) {
+            const page = document.getElementById(pageId);
+            page.classList.add('flipped');
             createConfetti();
         }
 
-        function reset() {
+        function resetBook() {
             location.reload();
         }
 
         function createConfetti() {
-            for (let i = 0; i < 100; i++) {
+            const colors = ['#f472b6', '#fbbf24', '#60a5fa', '#34d399', '#a78bfa'];
+            for (let i = 0; i < 60; i++) {
                 const confetti = document.createElement('div');
                 confetti.classList.add('confetti');
                 confetti.style.left = Math.random() * 100 + 'vw';
                 confetti.style.top = '-10px';
-                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
-                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-                
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
                 document.body.appendChild(confetti);
 
-                const animation = confetti.animate([
-                    { transform: `translate3d(0, 0, 0) rotate(0deg)`, opacity: 1 },
-                    { transform: `translate3d(${(Math.random() - 0.5) * 200}px, 100vh, 0) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                confetti.animate([
+                    { transform: 'translate3d(0, 0, 0) rotate(0deg)', opacity: 1 },
+                    { transform: `translate3d(${(Math.random() - 0.5) * 300}px, 100vh, 0) rotate(${Math.random() * 720}deg)`, opacity: 0 }
                 ], {
-                    duration: 2000 + Math.random() * 3000,
-                    easing: 'cubic-bezier(0, .9, .57, 1)',
-                    delay: Math.random() * 1000
-                });
-
-                animation.onfinish = () => confetti.remove();
+                    duration: 2000 + Math.random() * 2000,
+                    easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
+                }).onfinish = () => confetti.remove();
             }
         }
     </script>
 </body>
 </html>
-
