@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vrei să fii Dragobetele meu?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #fff5f5;
+            overflow-x: hidden;
+        }
+
+        .cursive {
+            font-family: 'Dancing+Script', cursive;
+        }
+
+        .trad-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0l5 15h15l-12 9 5 16-13-10-13 10 5-16-12-9h15z' fill='%23e53e3e' fill-opacity='0.05'/%3E%3C/svg%3E");
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        #noButton {
+            transition: all 0.2s ease-in-out;
+        }
+
+        #yesButton {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .heart-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="trad-pattern flex items-center justify-center min-h-screen p-4">
+
+    <div id="mainContainer" class="bg-white/80 backdrop-blur-sm p-8 md:p-12 rounded-3xl shadow-2xl border-4 border-red-100 text-center max-w-lg w-full relative">
+        
+        <div class="absolute -top-10 left-1/2 -translate-x-1/2 flex gap-4">
+            <span class="text-4xl floating">❤️</span>
+            <span class="text-4xl floating" style="animation-delay: 0.5s">🌹</span>
+            <span class="text-4xl floating" style="animation-delay: 1s">❤️</span>
+        </div>
+
+        <div id="questionState">
+            <h1 class="text-3xl md:text-5xl font-bold text-red-600 mb-6 cursive">
+                Vrei să fii Dragobetele meu?
+            </h1>
+            
+            <div class="mb-8">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHYwdWpndm96NHR4bmE1eHhhb2YyYndueGhzNTh6ZzJqZzZqZzZqJmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZNo/L13NsH0Aij4Sf2Gdjt/giphy.gif" 
+                     alt="Cute bear" 
+                     class="rounded-xl mx-auto shadow-lg w-64 h-64 object-cover"
+                     onerror="this.src='https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=300&q=80'">
+            </div>
+
+            <p id="funnyMessage" class="text-gray-600 mb-8 h-6 italic"></p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <button id="yesButton" 
+                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transform active:scale-95 transition-all">
+                    DA!
+                </button>
+                
+                <button id="noButton" 
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-8 rounded-full shadow-md transform active:scale-95">
+                    Nu
+                </button>
+            </div>
+        </div>
+
+        <div id="successState" class="hidden">
+            <h1 class="text-4xl md:text-6xl font-bold text-red-600 mb-6 cursive">
+                Știam eu! ❤️
+            </h1>
+            <p class="text-xl text-gray-700 mb-8">
+                Abia aștept să sărbătorim împreună!
+            </p>
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXQ2YWhjdmVsa2p1dTVhYWN6MjlhMXdpMmE0dTQ5czI3ODA2MmdqNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/HTjcWZwMtHpyhuCGKZ/giphy.gif" 
+                 class="rounded-xl mx-auto shadow-lg w-64"
+                 alt="Celebration">
+        </div>
+    </div>
+
+    <canvas id="heartsCanvas" class="heart-bg"></canvas>
+
+    <script>
+        const yesBtn = document.getElementById('yesButton');
+        const noBtn = document.getElementById('noButton');
+        const questionState = document.getElementById('questionState');
+        const successState = document.getElementById('successState');
+        const funnyMessage = document.getElementById('funnyMessage');
+        
+        let yesScale = 1;
+        let noScale = 1;
+        let noCount = 0;
+
+        const messages = [
+            "Ești sigură?",
+            "Mai gândește-te o dată...",
+            "Chiar vrei să spui nu?",
+            "O să plâng... 😢",
+            "Uită-te ce mare s-a făcut butonul de DA!",
+            "Hai te rooog!",
+            "Nu mai ai mult loc de butonul de NU...",
+            "Apasă pe ăla roșu, e mai frumos!",
+            "Te provoc să mai încerci o dată!"
+        ];
+
+        noBtn.addEventListener('click', () => {
+            noCount++;
+            
+            yesScale += 0.45;
+            yesBtn.style.transform = `scale(${yesScale})`;
+            
+            noScale -= 0.1;
+            if (noScale < 0.2) noScale = 0.2;
+            noBtn.style.transform = `scale(${noScale})`;
+            
+            funnyMessage.innerText = messages[Math.min(noCount - 1, messages.length - 1)];
+
+            const x = Math.random() * 40 - 20;
+            const y = Math.random() * 40 - 20;
+            noBtn.style.translate = `${x}px ${y}px`;
+        });
+
+        yesBtn.addEventListener('click', () => {
+            questionState.classList.add('hidden');
+            successState.classList.remove('hidden');
+            startConfetti();
+        });
+
+        const canvas = document.getElementById('heartsCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + 20;
+                this.size = Math.random() * 15 + 5;
+                this.speed = Math.random() * 2 + 1;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+            update() {
+                this.y -= this.speed;
+                if (this.y < -20) this.reset();
+            }
+            draw() {
+                ctx.fillStyle = `rgba(229, 62, 62, ${this.opacity})`;
+                ctx.beginPath();
+                const x = this.x;
+                const y = this.y;
+                const s = this.size;
+                ctx.moveTo(x, y + s / 4);
+                ctx.quadraticCurveTo(x, y, x + s / 2, y);
+                ctx.quadraticCurveTo(x + s, y, x + s, y + s / 4);
+                ctx.quadraticCurveTo(x + s, y + s / 2, x + s / 2, y + s * 0.8);
+                ctx.quadraticCurveTo(x, y + s / 2, x, y + s / 4);
+                ctx.fill();
+            }
+        }
+
+        for(let i = 0; i < 30; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function startConfetti() {
+            particles.forEach(p => {
+                p.speed *= 5;
+                p.opacity = 1;
+            });
+        }
+    </script>
+</body>
+</html>
